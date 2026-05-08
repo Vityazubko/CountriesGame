@@ -1,145 +1,86 @@
 <!DOCTYPE html>
-<html lang="uk">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Імперії Карти — Стратегія</title>
-  <style>
-    :root {
-      --bg:#070b16;--panel:#101a2f;--panel2:#14213d;--line:#2e3b60;--txt:#e6edff;--muted:#9db1e0;
-      --good:#56d874;--bad:#ff7b7b;--warn:#ffd166;--accent:#7aa2ff;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(circle at top,#0c1530,#070b16 60%);color:var(--txt);font-family:Inter,Segoe UI,Arial,sans-serif}
-    header{padding:14px 18px;border-bottom:1px solid var(--line);background:#091126cc;position:sticky;top:0;backdrop-filter:blur(6px);z-index:10}
-    h1{margin:0;font-size:1.2rem} #date{color:var(--warn);margin-top:6px;font-weight:700}
-    .wrap{max-width:1400px;margin:0 auto;padding:16px}
-    .hidden{display:none}
-    .grid{display:grid;gap:14px}
-    .choose{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:12px}
-    .countryPick{cursor:pointer;transition:.18s}.countryPick:hover{transform:translateY(-2px);border-color:#5f7ed0}
-    .layout{grid-template-columns:1.2fr .8fr}
-    @media(max-width:1060px){.layout{grid-template-columns:1fr}}
-    .map{height:680px;position:relative;background:#f2f4f8;border-radius:16px;border:4px solid #111;overflow:hidden}
-    .region{position:absolute;border:3px solid #111;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#111;line-height:1.1;padding:6px;transition:.2s}
-    .region:hover{filter:brightness(1.05)}.player{outline:5px solid #ffdc4d}.ally{box-shadow:0 0 0 5px #31d88a inset}.war{box-shadow:0 0 0 5px #ff7676 inset}.annexed{opacity:.45}
-    .babusia{left:44%;top:2%;width:22%;height:17%;background:#ffd180;clip-path:polygon(8% 40%,18% 8%,46% 2%,70% 8%,92% 28%,84% 53%,94% 79%,56% 95%,33% 74%,13% 80%,0 61%)}
-    .lalukia{left:20%;top:13%;width:49%;height:40%;background:#d8dde4;clip-path:polygon(2% 39%,12% 16%,23% 24%,35% 11%,52% 5%,68% 1%,79% 10%,95% 8%,91% 32%,99% 51%,86% 70%,72% 67%,61% 96%,48% 84%,35% 96%,25% 79%,8% 72%,0 57%)}
-    .tato{left:65%;top:8%;width:30%;height:41%;background:#dfd2c5;clip-path:polygon(3% 18%,31% 5%,54% 8%,79% 16%,83% 29%,97% 37%,100% 61%,85% 91%,64% 86%,50% 60%,29% 66%,15% 49%,0 42%)}
-    .mama{left:68%;top:40%;width:20%;height:25%;background:#ffc8db;clip-path:polygon(10% 8%,55% 0,90% 24%,98% 58%,71% 90%,31% 100%,5% 76%,0 35%)}
-    .maks{left:59%;top:58%;width:22%;height:36%;background:#cbe4ff;clip-path:polygon(11% 0,74% 8%,92% 35%,78% 70%,85% 100%,48% 94%,20% 72%,0 45%)}
-    .vitska{left:25%;top:55%;width:36%;height:28%;background:#f7f7f7;clip-path:polygon(4% 14%,36% 0,72% 8%,96% 28%,100% 84%,70% 90%,42% 84%,12% 100%,0 68%)}
-    .nuclear{left:6%;top:40%;width:27%;height:39%;background:#d0e9ad;clip-path:polygon(25% 0,100% 4%,82% 38%,60% 84%,25% 76%,5% 96%,0 50%)}
-    .spvd{left:8%;top:80%;width:30%;height:18%;background:#c4ced7;clip-path:polygon(10% 24%,42% 0,100% 12%,84% 88%,45% 92%,8% 100%,0 55%)}
-    .stats .row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:7px 0;gap:10px}
-    .deltaPlus{color:var(--good)}.deltaMinus{color:var(--bad)}
-    button,select{width:100%;border:none;border-radius:10px;padding:10px;margin-top:8px}
-    button{font-weight:700;cursor:pointer;background:linear-gradient(180deg,#ffd660,#ffc93e)} button:hover{filter:brightness(1.05)}
-    .sub{font-size:.86rem;color:var(--muted)} .log,.table{max-height:180px;overflow:auto;background:#0b1325;border:1px solid var(--line);border-radius:10px;padding:8px}
-    .table .item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1f3059}
-  </style>
-</head>
-<body>
-<header><h1>🗺️ Імперії Карти</h1><div id="date"></div></header>
-<div class="wrap" id="chooseScreen">
-  <h2>Обери свою країну</h2>
-  <div class="grid choose" id="countryGrid"></div>
-</div>
-<div class="wrap hidden" id="gameScreen">
-  <div class="grid layout">
-    <section class="card">
-      <h2>Карта</h2>
-      <div class="map" id="map"></div>
-    </section>
-    <section class="card stats">
-      <h2 id="countryName"></h2>
-      <div class="row"><span>👥 Населення</span><span><b id="population"></b> <span id="popDelta"></span></span></div>
-      <div class="row"><span>💰 Гроші</span><span><b id="money"></b> <span id="moneyDelta"></span></span></div>
-      <div class="row"><span>🌾 Їжа</span><span><b id="food"></b> <span id="foodDelta"></span></span></div>
-      <div class="row"><span>🛡️ Армія</span><b id="army"></b></div>
-      <div class="row"><span>📐 Площа</span><b id="area"></b></div>
-      <div class="row"><span>😊 Стабільність</span><b id="stability"></b></div>
-      <div class="row"><span>🏭 Економіка</span><b id="economy"></b></div>
-      <div class="row"><span>👨‍👩‍👧‍👦 Густота</span><b id="density"></b></div>
-      <div class="sub" id="costInfo"></div>
-      <button onclick="upgrade('economy')">Прокачати економіку</button>
-      <button onclick="upgrade('army')">Прокачати армію</button>
-      <button onclick="upgrade('food')">Покращити їжу</button>
-      <select id="target"></select>
-      <button onclick="diplomacy('ally')">Укласти союз</button>
-      <button onclick="diplomacy('peace')">Підписати мир</button>
-      <h3>Відносини з твоєю країною</h3>
-      <div class="table" id="relations"></div>
-      <h3>Події</h3>
-      <div class="log" id="log"></div>
-    </section>
-  </div>
-</div>
+<html lang="uk"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Імперії Карти — Deluxe</title>
+<style>
+:root{--bg:#07101f;--panel:#12203d;--line:#31486f;--txt:#eef4ff;--muted:#9cb2de;--ok:#52d879;--bad:#ff7f7f;--gold:#ffd35f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#0e1f3d,#07101f 65%);color:var(--txt);font-family:Segoe UI,Arial}
+header{position:sticky;top:0;background:#08152bcc;border-bottom:1px solid var(--line);padding:12px 16px;backdrop-filter:blur(5px)}
+.wrap{max-width:1450px;margin:0 auto;padding:14px}.hidden{display:none}.grid{display:grid;gap:12px}.choose{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.layout{grid-template-columns:1.2fr .8fr}@media(max-width:1060px){.layout{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,#12203d,#0f1a33);border:1px solid var(--line);border-radius:14px;padding:12px}.pick{cursor:pointer}.pick:hover{outline:2px solid #6686cc}
+.map{position:relative;height:700px;background:#f2f5fb;border-radius:15px;border:4px solid #101010;overflow:hidden}
+.region{position:absolute;border:3px solid #111;display:flex;justify-content:center;align-items:center;text-align:center;font-weight:800;color:#101010;line-height:1.1;padding:4px;cursor:pointer}
+.player{outline:5px solid #ffe173}.ally{box-shadow:0 0 0 5px #35db8a inset}.war{box-shadow:0 0 0 5px #ff8b8b inset}.annexed{opacity:.45}
+.babusia{left:43%;top:2%;width:22%;height:16%;background:#ffd48d;clip-path:polygon(8% 40%,18% 8%,46% 2%,70% 8%,92% 28%,84% 53%,94% 79%,56% 95%,33% 74%,13% 80%,0 61%)}
+.lalukia{left:20%;top:13%;width:49%;height:39%;background:#dce2ea;clip-path:polygon(2% 39%,12% 16%,23% 24%,35% 11%,52% 5%,68% 1%,79% 10%,95% 8%,91% 32%,99% 51%,86% 70%,72% 67%,61% 96%,48% 84%,35% 96%,25% 79%,8% 72%,0 57%)}
+.tato{left:65%;top:8%;width:30%;height:41%;background:#e4d5ca;clip-path:polygon(3% 18%,31% 5%,54% 8%,79% 16%,83% 29%,97% 37%,100% 61%,85% 91%,64% 86%,50% 60%,29% 66%,15% 49%,0 42%)}
+.mama{left:68%;top:40%;width:20%;height:24%;background:#ffcddf;clip-path:polygon(10% 8%,55% 0,90% 24%,98% 58%,71% 90%,31% 100%,5% 76%,0 35%)}
+.maks{left:59%;top:58%;width:22%;height:35%;background:#cce5ff;clip-path:polygon(11% 0,74% 8%,92% 35%,78% 70%,85% 100%,48% 94%,20% 72%,0 45%)}
+.vitska{left:25%;top:54%;width:36%;height:27%;background:#f8f8f8;clip-path:polygon(4% 14%,36% 0,72% 8%,96% 28%,100% 84%,70% 90%,42% 84%,12% 100%,0 68%)}
+.nuclear{left:9%;top:39%;width:24%;height:36%;background:#d8eeb6;clip-path:polygon(25% 0,100% 4%,82% 38%,60% 84%,25% 76%,5% 96%,0 50%)}
+.spvd{left:17%;top:80%;width:32%;height:16%;background:#c2ccda;clip-path:polygon(8% 26%,40% 0,100% 14%,86% 90%,44% 94%,8% 100%,0 55%)}
+.arubia{left:1%;top:62%;width:19%;height:18%;background:#f6e4b8;clip-path:polygon(7% 20%,38% 5%,95% 12%,97% 60%,65% 92%,10% 88%,0 50%)}
+.sylva{left:0%;top:79%;width:18%;height:16%;background:#d6f2d5;clip-path:polygon(12% 6%,58% 0,96% 20%,90% 84%,42% 100%,4% 88%,0 45%)}
+.row{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0}.plus{color:var(--ok)}.minus{color:var(--bad)}
+button,select,input{width:100%;padding:9px;border:none;border-radius:9px;margin-top:7px}button{background:linear-gradient(180deg,#ffe179,#ffc940);font-weight:700;cursor:pointer}
+.log,.tbl{max-height:170px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#0b152c;padding:8px}.mini{color:var(--muted);font-size:.86rem}
+#countryModal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:12px}#countryModal.show{display:flex}
+.modalBox{width:min(500px,95vw);background:#12203d;border:1px solid var(--line);border-radius:12px;padding:12px}
+</style></head><body>
+<header><h2 style="margin:0">🗺️ Імперії Карти</h2><div id="date"></div></header>
+<div class="wrap" id="chooseScreen"><h3>Обери країну</h3><div class="grid choose" id="countryGrid"></div></div>
+<div class="wrap hidden" id="gameScreen"><div class="grid layout"><section class="card"><h3>Карта (клікни по країні)</h3><div class="map" id="map"></div></section>
+<section class="card"><h3 id="countryName"></h3>
+<div class="row"><span>👥 Населення</span><span><b id="population"></b> <span id="popDelta"></span></span></div>
+<div class="row"><span>💰 Гроші</span><span><b id="money"></b> <span id="moneyDelta"></span></span></div>
+<div class="row"><span>🌾 Їжа</span><span><b id="food"></b> <span id="foodDelta"></span></span></div>
+<div class="row"><span>🛡️ Армія</span><b id="army"></b></div><div class="row"><span>📐 Площа</span><b id="area"></b></div><div class="row"><span>😊 Стабільність</span><b id="stability"></b></div><div class="row"><span>🏭 Економіка</span><b id="economy"></b></div>
+<div class="mini" id="prices"></div>
+<button onclick="upgrade('economy')" id="btnEco"></button><button onclick="upgrade('army')" id="btnArmy"></button><button onclick="upgrade('food')" id="btnFood"></button>
+<h4>Відносини</h4><div class="tbl" id="relations"></div><h4>Події</h4><div class="log" id="log"></div></section></div></div>
+<div id="countryModal"><div class="modalBox"><h3 id="mName"></h3><div id="mInfo" class="mini"></div><label>💸 Сума допомоги:</label><input id="aidInput" type="number" min="0" step="100" value="1000"/>
+<button onclick="sendAid()">Надіслати гроші (покращити відносини)</button><button onclick="declareWar()">Оголосити війну</button><button onclick="makeAllianceModal()">Зробити союз</button><button onclick="closeModal()" style="background:#93a7d6">Закрити</button></div></div>
 <script>
-const DAY_MS = 3000;
-const startDate = new Date(2023,2,8);
-const regions = [
- {name:"Вітська Республіка",shape:"vitska",population:320000000,army:40000,area:500000,stability:90,money:2600,food:1900,economy:6},
- {name:"Лалук'я",shape:"lalukia",population:180000000,army:15000,area:1150000,stability:60,money:1700,food:1300,economy:4},
- {name:"Макс",shape:"maks",population:130000000,army:30000,area:300000,stability:80,money:1800,food:1100,economy:5},
- {name:"СПВД",shape:"spvd",population:175000000,army:45000,area:250000,stability:70,money:2200,food:950,economy:5},
- {name:"Ядерна Країна",shape:"nuclear",population:90000000,army:35000,area:350000,stability:60,money:2100,food:900,economy:5},
- {name:"Тато",shape:"tato",population:150000000,army:10000,area:600000,stability:80,money:1600,food:1200,economy:4},
- {name:"Мама",shape:"mama",population:150000000,army:5000,area:400000,stability:70,money:1500,food:1300,economy:4},
- {name:"Бабуся",shape:"babusia",population:50000000,army:100,area:100000,stability:90,money:1300,food:1400,economy:3}
+const DAY_MS=3000, START=new Date(2023,2,8);
+const regions=[
+{name:"Вітська Республіка",shape:"vitska",population:320000000,army:40000,area:500000,stability:90,money:2600,food:1900,economy:6},
+{name:"Лалук'я",shape:"lalukia",population:180000000,army:15000,area:1150000,stability:60,money:1700,food:1300,economy:4},
+{name:"Макс",shape:"maks",population:130000000,army:30000,area:300000,stability:80,money:1800,food:1100,economy:5},
+{name:"СПВД",shape:"spvd",population:175000000,army:45000,area:250000,stability:70,money:2200,food:950,economy:5},
+{name:"Ядерна Країна",shape:"nuclear",population:90000000,army:35000,area:350000,stability:60,money:2100,food:900,economy:5},
+{name:"Тато",shape:"tato",population:150000000,army:10000,area:600000,stability:80,money:1600,food:1200,economy:4},
+{name:"Мама",shape:"mama",population:150000000,army:5000,area:400000,stability:70,money:1500,food:1300,economy:4},
+{name:"Бабуся",shape:"babusia",population:50000000,army:100,area:100000,stability:90,money:1300,food:1400,economy:3},
+{name:"Арубія",shape:"arubia",population:80000000,army:25000,area:150000,stability:60,money:1500,food:950,economy:4},
+{name:"Сильва",shape:"sylva",population:80000000,army:15000,area:150000,stability:80,money:1400,food:1100,economy:4}
 ];
-const S = {date:new Date(startDate),player:null,priceMult:1,countries:[],tick:null};
-function init(){
-  S.countries=regions.map(c=>({...c,alive:true,owner:c.name,relations:{},war:null,warDays:0,nextWar:rnd(30,90),nextEvent:rnd(7,21),delta:{p:0,m:0,f:0}}));
-  for (const a of S.countries) for (const b of S.countries) if(a.name!==b.name) a.relations[b.name]=0;
-  renderSelection(); renderMap(); updateDate();
-}
-function renderSelection(){const g=document.getElementById('countryGrid');g.innerHTML='';S.countries.forEach(c=>{const d=document.createElement('div');d.className='card countryPick';d.innerHTML=`<h3>${c.name}</h3><div>👥 ${fmt(c.population)}</div><div>🛡️ ${fmt(c.army)}</div><div>📐 ${fmt(c.area)} км²</div><div>😊 ${c.stability}%</div>`;d.onclick=()=>chooseCountry(c.name);g.appendChild(d);});}
-function renderMap(){const map=document.getElementById('map');map.innerHTML='';S.countries.forEach(c=>{const d=document.createElement('div');d.className=`region ${c.shape}`;d.id='r-'+id(c.name);d.innerHTML=c.name.replace(' ','<br>');map.appendChild(d);});}
-function chooseCountry(name){S.player=name;document.getElementById('chooseScreen').classList.add('hidden');document.getElementById('gameScreen').classList.remove('hidden');log(`🌍 Старт за країну: ${name}`);updateUI();S.tick=setInterval(nextDay,DAY_MS);}
-function nextDay(){S.date.setDate(S.date.getDate()+1);for(const c of alive()) simulateCountry(c);runWars();updateUI();}
-function simulateCountry(c){
-  const density=c.population/c.area;
-  let pop=Math.floor(c.population*(0.00020+c.economy*0.000016));
-  let money=Math.floor(c.economy*32 + c.population/1300000);
-  let food=Math.floor(c.economy*24 - c.population/900000);
-  if(c.stability<50) pop-=70000;
-  if(c.food<600) pop-=90000;
-  if(density>1000) pop-=Math.floor((density-1000)*150);
-  if(c.war){pop=Math.floor(pop*0.35);money=Math.floor(money*0.58);food=Math.floor(food*0.65);c.army=Math.max(0,c.army-Math.max(30,Math.floor(c.army*0.003)));if(c.stability>80)c.army+=Math.max(20,Math.floor(c.population*0.000012));c.stability=Math.max(0,c.stability-0.06);} 
-  else if(c.stability<45){c.army=Math.max(0,c.army-Math.max(10,Math.floor(c.army*0.0018)));c.population=Math.max(0,c.population-Math.floor(c.population*0.00004));}
-  c.population=Math.max(0,c.population+pop); c.money=Math.max(0,c.money+money); c.food=Math.max(0,c.food+food);
-  c.delta={p:pop,m:money,f:food};
-  if(c.name!==S.player) aiUpgrade(c);
-  if(--c.nextEvent<=0){stateEvent(c);c.nextEvent=rnd(7,21);}
-  if(--c.nextWar<=0){aiWar(c);c.nextWar=rnd(30,90);}
-}
-function aiUpgrade(c){if(Math.random()<0.18&&c.money>520){c.money-=520;c.economy++;}if(Math.random()<0.16&&c.money>620){c.money-=620;c.army+=2500;}if(Math.random()<0.12&&c.money>460){c.money-=460;c.food+=220;c.stability=Math.min(100,c.stability+1);}}
-function aiWar(a){if(a.war||!a.alive)return;const targets=alive().filter(b=>b.name!==a.name && !isAllied(a,b) && a.relations[b.name]<35);if(!targets.length)return;const b=pick(targets);startWar(a,b,"Планова атака");}
-function startWar(a,b,reason){if(a.war||b.war||!a.alive||!b.alive)return;a.war=b.name;b.war=a.name;a.warDays=b.warDays=rnd(5,30);log(`⚔️ ${a.name} напала на ${b.name}. ${reason}. Тривалість: ${a.warDays} дн.`);if((a.name===S.player||b.name===S.player)&&Math.random()<0.2){const side=Math.random()<0.5?a:b;const helper=alive().find(c=>!c.war&&c.name!==a.name&&c.name!==b.name);if(helper){const boost=Math.floor(helper.army*0.2);side.army+=boost;log(`🪖 ${helper.name} вступила у війну на боці ${side.name} (+${fmt(boost)} армії)`);}}}
-function runWars(){for(const c of alive()){if(!c.war)continue;c.warDays--;if(c.warDays<=0){const enemy=get(c.war);if(enemy&&enemy.alive&&enemy.war===c.name) resolveWar(c,enemy);}}}
-function resolveWar(a,b){if(!a.alive||!b.alive)return;const pA=power(a),pB=power(b);const winner=pA>=pB?a:b;const loser=winner===a?b:a;annex(winner,loser);winner.war=null;loser.war=null;log(`🏴 ${winner.name} перемогла та анексувала ${loser.name}`);} 
-function annex(w,l){w.population+=Math.floor(l.population*0.87);w.food+=Math.floor(l.food*0.9);w.area+=l.area;w.money+=Math.floor(l.money*0.55);w.army+=Math.floor(l.army*0.3);l.alive=false;l.population=0;l.army=0;l.food=0;l.money=0;const el=document.getElementById('r-'+id(l.name));el.classList.add('annexed');el.innerHTML=`${l.name}<br>(${w.name})`;}
-function stateEvent(c){const e=rnd(1,4);if(e===1){c.food=Math.max(0,c.food-260);c.stability=Math.max(0,c.stability-4);log(`🔥 Пожежа в країні ${c.name}`);}if(e===2){c.stability=Math.max(0,c.stability-13);c.money=Math.max(0,c.money-340);log(`⚠️ Революція/протести в ${c.name}`);}if(e===3&&c.name!==S.player){const p=player();if(p&&!isAllied(c,p))log(`🤝 ${c.name} надсилає запит на союз`);}if(e===4&&c.name!==S.player){const p=player();if(p&&!p.war&&!isAllied(c,p)&&Math.random()<0.5)startWar(c,p,"Декларація війни");}}
-function diplomacy(type){const p=player(),t=get(document.getElementById('target').value);if(!p||!t||!t.alive||p.name===t.name)return;if(type==='ally'){const cost=1200+Math.floor((100-p.relations[t.name])*10);if(p.money<cost)return log('❌ Мало грошей для союзу');p.money-=cost;p.relations[t.name]=100;t.relations[p.name]=100;log(`🤝 Союз з ${t.name} (${fmt(cost)}💰)`);}if(type==='peace'){const cost=900+Math.floor((60-Math.min(60,p.relations[t.name]))*12);if(p.money<cost)return log('❌ Мало грошей для миру');p.money-=cost;p.relations[t.name]=Math.max(45,p.relations[t.name]);t.relations[p.name]=Math.max(45,t.relations[p.name]);if(p.war===t.name){p.war=null;t.war=null;}log(`🕊️ Мир з ${t.name} (${fmt(cost)}💰)`);}updateUI();}
-function upgrade(type){const p=player();if(!p)return;let base=0; if(type==='economy')base=600; if(type==='army')base=700; if(type==='food')base=500; const price=Math.floor(base*S.priceMult); if(p.money<price)return log('❌ Недостатньо грошей'); p.money-=price; if(type==='economy')p.economy++; if(type==='army')p.army+=5500; if(type==='food'){p.food+=400;p.stability=Math.min(100,p.stability+2);} S.priceMult*=1.1; log(`⬆️ Прокачка ${type}. Ціна апгрейдів +10%`); updateUI();}
-function updateUI(){const p=player();if(!p)return;updateDate();idSet('countryName',p.name);idSet('population',fmt(p.population));idSet('money',fmt(p.money));idSet('food',fmt(p.food));idSet('army',fmt(p.army));idSet('area',fmt(p.area)+' км²');idSet('stability',p.stability.toFixed(1)+'%');idSet('economy',p.economy);idSet('density',(p.population/p.area).toFixed(1)+' / км²');delta('popDelta',p.delta.p);delta('moneyDelta',p.delta.m);delta('foodDelta',p.delta.f);idSet('costInfo','Поточний множник цін апгрейдів: x'+S.priceMult.toFixed(2));
-  alive().forEach(c=>{const el=document.getElementById('r-'+id(c.name));el.classList.toggle('player',c.name===p.name);el.classList.toggle('ally',isAllied(c,p));el.classList.toggle('war',p.war===c.name||c.war===p.name);});
-  const others=alive().filter(c=>c.name!==p.name);document.getElementById('target').innerHTML=others.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
-  document.getElementById('relations').innerHTML=others.map(c=>`<div class='item'><span>${c.name}${p.war===c.name?' (війна)':''}</span><b>${p.relations[c.name]||0}</b></div>`).join('');
-}
-function power(c){return c.army*(0.7+c.stability/100)+c.economy*500+c.population/50000}
-function alive(){return S.countries.filter(c=>c.alive)} function player(){return get(S.player)}
-function get(name){return S.countries.find(c=>c.name===name)} function pick(a){return a[Math.floor(Math.random()*a.length)]}
-function isAllied(a,b){return a.relations[b.name]>=100 && b.relations[a.name]>=100}
-function delta(idName,val){document.getElementById(idName).innerHTML=`<span class='${val>=0?'deltaPlus':'deltaMinus'}'>${val>=0?'+':''}${fmt(val)}</span>`}
-function idSet(idName,v){document.getElementById(idName).textContent=v} function id(t){return t.toLowerCase().replace(/\s+/g,'-').replace(/[']/g,'')}
-function log(t){const e=document.createElement('div');e.textContent=`${fmtDate(S.date)} — ${t}`;document.getElementById('log').prepend(e)}
-function fmt(n){return Math.floor(n).toLocaleString('uk-UA')} function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function fmtDate(d){const m=["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()} року`;}
-function updateDate(){document.getElementById('date').textContent=fmtDate(S.date)}
+const S={date:new Date(START),player:null,countries:[],modalTarget:null,price:{economy:600,army:700,food:500}};
+function init(){S.countries=regions.map(c=>({...c,alive:true,relations:{},war:null,warDays:0,nextWar:r(30,90),nextEvent:r(7,21),delta:{p:0,m:0,f:0}}));S.countries.forEach(a=>S.countries.forEach(b=>{if(a.name!==b.name)a.relations[b.name]=0;}));drawPick();drawMap();uDate();}
+function drawPick(){const g=el('countryGrid');g.innerHTML='';S.countries.forEach(c=>{const d=document.createElement('div');d.className='card pick';d.innerHTML=`<h4>${c.name}</h4><div>👥 ${f(c.population)}</div><div>🛡️ ${f(c.army)}</div>`;d.onclick=()=>choose(c.name);g.appendChild(d);});}
+function drawMap(){const m=el('map');m.innerHTML='';S.countries.forEach(c=>{const d=document.createElement('div');d.className='region '+c.shape;d.id='r'+id(c.name);d.innerHTML=c.name.replace(' ','<br>');d.onclick=()=>openCountryMenu(c.name);m.appendChild(d);});}
+function choose(n){S.player=n;el('chooseScreen').classList.add('hidden');el('gameScreen').classList.remove('hidden');log('🌍 Старт за '+n);upd();setInterval(nextDay,DAY_MS);}
+function nextDay(){S.date.setDate(S.date.getDate()+1);alive().forEach(sim);wars();upd();}
+function sim(c){let dP=Math.floor(c.population*(0.0002+c.economy*0.000016)),dM=Math.floor(c.economy*32+c.population/1300000),dF=Math.floor(c.economy*24-c.population/900000),dens=c.population/c.area;if(c.stability<50)dP-=70000;if(c.food<600)dP-=90000;if(dens>1000)dP-=Math.floor((dens-1000)*150);if(c.war){dP=Math.floor(dP*0.35);dM=Math.floor(dM*0.58);dF=Math.floor(dF*0.65);c.army=Math.max(0,c.army-Math.max(30,Math.floor(c.army*0.003)));c.stability=Math.max(0,c.stability-0.06);if(c.stability>80)c.army+=Math.max(20,Math.floor(c.population*0.000012));}else if(c.stability<45){c.army=Math.max(0,c.army-Math.max(10,Math.floor(c.army*0.0018)));c.population=Math.max(0,c.population-Math.floor(c.population*0.00004));}
+c.population=Math.max(0,c.population+dP);c.money=Math.max(0,c.money+dM);c.food=Math.max(0,c.food+dF);c.delta={p:dP,m:dM,f:dF};if(c.name!==S.player)ai(c);if(--c.nextEvent<=0){evt(c);c.nextEvent=r(7,21);}if(--c.nextWar<=0){aiWar(c);c.nextWar=r(30,90);} }
+function ai(c){if(Math.random()<.17&&c.money>520){c.money-=520;c.economy++;}if(Math.random()<.15&&c.money>620){c.money-=620;c.army+=2500;}}
+function aiWar(a){if(a.war||!a.alive)return;const t=alive().filter(b=>b.name!==a.name&&!allied(a,b)&&a.relations[b.name]<35);if(!t.length)return;startWar(a,pick(t),'Планова атака');}
+function startWar(a,b,why){if(a.war||b.war||!a.alive||!b.alive)return;a.war=b.name;b.war=a.name;a.warDays=b.warDays=r(5,30);log(`⚔️ ${a.name} ↔ ${b.name} (${why}, ${a.warDays} дн.)`);} 
+function wars(){alive().forEach(c=>{if(!c.war)return;c.warDays--;if(c.warDays<=0){const e=get(c.war);if(e&&e.alive&&e.war===c.name)resolve(c,e);}});} 
+function resolve(a,b){const w=pow(a)>=pow(b)?a:b,l=w===a?b:a;annex(w,l);w.war=null;l.war=null;log(`🏴 ${w.name} анексувала ${l.name}`);} 
+function annex(w,l){w.population+=Math.floor(l.population*.87);w.food+=Math.floor(l.food*.9);w.area+=l.area;w.money+=Math.floor(l.money*.55);w.army+=Math.floor(l.army*.3);l.alive=false;const e=el('r'+id(l.name));e.classList.add('annexed');e.innerHTML=`${l.name}<br>(${w.name})`;}
+function evt(c){const e=r(1,4);if(e===1){c.food=Math.max(0,c.food-260);c.stability=Math.max(0,c.stability-4);log(`🔥 Пожежа у ${c.name}`);}if(e===2){c.stability=Math.max(0,c.stability-13);c.money=Math.max(0,c.money-340);log(`⚠️ Революція у ${c.name}`);}if(e===3&&c.name!==S.player){log(`🤝 ${c.name} запитує союз`);}if(e===4&&c.name!==S.player&&Math.random()<.5){const p=pl();if(p&&!p.war&&!allied(c,p))startWar(c,p,'Декларація війни');}}
+function upgrade(t){const p=pl(),price=S.price[t];if(p.money<price)return log('❌ Мало грошей');p.money-=price;if(t==='economy')p.economy++;if(t==='army')p.army+=5500;if(t==='food'){p.food+=400;p.stability=Math.min(100,p.stability+2);}S.price[t]=Math.floor(S.price[t]*1.1);log(`⬆️ ${t} покращено. Нова ціна ${f(S.price[t])}`);upd();}
+function openCountryMenu(name){if(!S.player||name===S.player)return;const t=get(name),p=pl();if(!t||!t.alive)return;S.modalTarget=name;el('mName').textContent=t.name;el('mInfo').innerHTML=`Відносини: <b>${p.relations[t.name]}</b><br>Гроші: ${f(t.money)} | Їжа: ${f(t.food)} | Армія: ${f(t.army)} | Розвиток: ${t.economy}`;el('countryModal').classList.add('show');}
+function closeModal(){el('countryModal').classList.remove('show');}
+function sendAid(){const p=pl(),t=get(S.modalTarget),sum=Math.max(0,Number(el('aidInput').value||0));if(!t||!t.alive)return;if(p.money<sum)return log('❌ Немає стільки грошей');p.money-=sum;t.money+=sum;const dev=Math.max(1,t.economy+t.army/12000+t.population/120000000);const gain=Math.max(1,Math.floor((sum/400)/dev*8));p.relations[t.name]=Math.min(100,p.relations[t.name]+gain);t.relations[p.name]=Math.min(100,t.relations[p.name]+Math.floor(gain*0.8));log(`💸 Допомога ${t.name}: ${f(sum)} (відносини +${gain})`);openCountryMenu(t.name);upd();}
+function declareWar(){const p=pl(),t=get(S.modalTarget);if(!t||!t.alive)return;if(allied(p,t))return log('❌ Спершу розірви союз (через падіння відносин)');startWar(p,t,'Ти оголосив війну');closeModal();upd();}
+function makeAllianceModal(){const p=pl(),t=get(S.modalTarget);if(!t||!t.alive)return;const cost=1200+Math.floor((100-p.relations[t.name])*10);if(p.money<cost)return log('❌ Мало грошей на союз');p.money-=cost;p.relations[t.name]=100;t.relations[p.name]=100;log(`🤝 Союз з ${t.name} за ${f(cost)}`);openCountryMenu(t.name);upd();}
+function upd(){const p=pl();if(!p)return;uDate();set('countryName',p.name);set('population',f(p.population));set('money',f(p.money));set('food',f(p.food));set('army',f(p.army));set('area',f(p.area)+' км²');set('stability',p.stability.toFixed(1)+'%');set('economy',p.economy);delta('popDelta',p.delta.p);delta('moneyDelta',p.delta.m);delta('foodDelta',p.delta.f);
+set('prices',`Ціни: Економіка ${f(S.price.economy)} | Армія ${f(S.price.army)} | Їжа ${f(S.price.food)}`);el('btnEco').textContent='Прокачати економіку ('+f(S.price.economy)+')';el('btnArmy').textContent='Прокачати армію ('+f(S.price.army)+')';el('btnFood').textContent='Покращити їжу ('+f(S.price.food)+')';
+alive().forEach(c=>{const e=el('r'+id(c.name));e.classList.toggle('player',c.name===p.name);e.classList.toggle('ally',allied(c,p));e.classList.toggle('war',p.war===c.name||c.war===p.name);});
+el('relations').innerHTML=alive().filter(c=>c.name!==p.name).map(c=>`<div class='row'><span>${c.name}${p.war===c.name?' (війна)':''}</span><b>${p.relations[c.name]}</b></div>`).join('');}
+function pow(c){return c.army*(.7+c.stability/100)+c.economy*500+c.population/50000}function alive(){return S.countries.filter(c=>c.alive)}function pl(){return get(S.player)}function get(n){return S.countries.find(c=>c.name===n)}
+function allied(a,b){return a.relations[b.name]>=100&&b.relations[a.name]>=100}function pick(a){return a[Math.floor(Math.random()*a.length)]}function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function delta(id,v){el(id).innerHTML=`<span class='${v>=0?'plus':'minus'}'>${v>=0?'+':''}${f(v)}</span>`}function set(i,v){el(i).textContent=v}function el(i){return document.getElementById(i)}function id(t){return t.toLowerCase().replace(/\s+/g,'-').replace(/[']/g,'')}
+function log(t){const d=document.createElement('div');d.textContent=`${fd(S.date)} — ${t}`;el('log').prepend(d)}function f(n){return Math.floor(n).toLocaleString('uk-UA')}function fd(d){const m=["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()} року`;}function uDate(){el('date').textContent=fd(S.date)}
 init();
-</script>
-</body>
-</html>
+</script></body></html>
