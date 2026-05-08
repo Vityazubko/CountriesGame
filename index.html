@@ -1,463 +1,615 @@
-<!DOCTYPE html><html lang="uk">
+<!DOCTYPE html>
+<html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Гра країн</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }body {
-  margin: 0;
-  background: linear-gradient(135deg, #1b1f3a, #0c1024);
-  color: white;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Прокачка Країни</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Arial;
 }
 
-header {
-  padding: 16px;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.35);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+body{
+    margin:0;
+    background:#0f172a;
+    color:white;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 30px;
+header{
+    background:#111827;
+    padding:15px;
+    text-align:center;
+    border-bottom:3px solid #374151;
 }
 
-.date-box {
-  margin-top: 8px;
-  font-size: 18px;
-  color: #ffe082;
+#date{
+    color:#facc15;
+    font-size:20px;
+    margin-top:5px;
 }
 
-.screen {
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
+.screen{
+    padding:20px;
 }
 
-.hidden {
-  display: none;
+.country-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
 }
 
-.country-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+.country-card{
+    background:#1e293b;
+    border:2px solid #334155;
+    border-radius:15px;
+    padding:15px;
+    cursor:pointer;
+    transition:.2s;
 }
 
-.country-card {
-  padding: 18px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  cursor: pointer;
-  transition: 0.2s;
-  text-align: center;
+.country-card:hover{
+    transform:scale(1.03);
+    background:#334155;
 }
 
-.country-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.18);
+.hidden{
+    display:none;
 }
 
-.country-card h2 {
-  margin: 0 0 10px;
+.layout{
+    display:grid;
+    grid-template-columns:1.4fr .8fr;
+    gap:20px;
 }
 
-.game-layout {
-  display: grid;
-  grid-template-columns: 1.35fr 0.85fr;
-  gap: 20px;
+@media(max-width:900px){
+    .layout{
+        grid-template-columns:1fr;
+    }
 }
 
-@media (max-width: 850px) {
-  .game-layout {
-    grid-template-columns: 1fr;
-  }
+.panel{
+    background:#1e293b;
+    border-radius:15px;
+    padding:15px;
 }
 
-.panel {
-  background: rgba(255, 255, 255, 0.09);
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+.map{
+    position:relative;
+    width:100%;
+    height:600px;
+    background:#ececec;
+    border-radius:20px;
+    overflow:hidden;
+    border:5px solid black;
 }
 
-.map {
-  position: relative;
-  width: 100%;
-  height: 550px;
-  border-radius: 18px;
-  background: #27344f;
-  overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+.region{
+    position:absolute;
+    border:4px solid black;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-weight:bold;
+    color:black;
+    padding:5px;
+    transition:.2s;
 }
 
-.sea-label {
-  position: absolute;
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 28px;
-  font-weight: bold;
+.region:hover{
+    transform:scale(1.02);
 }
 
-.region {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-  font-weight: bold;
-  border: 3px solid rgba(255, 255, 255, 0.7);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.55);
-  transition: 0.2s;
-  padding: 5px;
+.owned{
+    outline:6px solid yellow;
 }
 
-.region.owned {
-  outline: 5px solid #fff176;
-  transform: scale(1.03);
-  z-index: 5;
+.babusia{
+    left:42%;
+    top:3%;
+    width:25%;
+    height:17%;
+    background:#ffd180;
+    clip-path:polygon(5% 40%,15% 10%,45% 2%,70% 8%,95% 30%,82% 50%,92% 78%,58% 92%,35% 74%,12% 80%,0 60%);
 }
 
-.vnr { left: 6%; top: 12%; width: 28%; height: 26%; background: #4caf50; border-radius: 40% 25% 30% 45%; }
-.lalukia { left: 32%; top: 7%; width: 26%; height: 30%; background: #ff7043; border-radius: 28% 45% 30% 25%; }
-.maks { left: 58%; top: 12%; width: 34%; height: 23%; background: #5c6bc0; border-radius: 35% 30% 40% 20%; }
-.spvd { left: 10%; top: 38%; width: 26%; height: 28%; background: #26a69a; border-radius: 25% 35% 45% 25%; }
-.nuclear { left: 38%; top: 38%; width: 25%; height: 29%; background: #8bc34a; border-radius: 45% 20% 35% 30%; }
-.tato { left: 65%; top: 37%; width: 26%; height: 30%; background: #ab47bc; border-radius: 25% 45% 30% 35%; }
-.mama { left: 18%; top: 69%; width: 31%; height: 22%; background: #ec407a; border-radius: 40% 20% 25% 45%; }
-.babusia { left: 51%; top: 68%; width: 36%; height: 24%; background: #ffa726; border-radius: 20% 35% 45% 30%; }
-
-.stat {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+.lalukia{
+    left:22%;
+    top:15%;
+    width:47%;
+    height:39%;
+    background:#cfd8dc;
+    clip-path:polygon(3% 38%,12% 18%,24% 25%,34% 10%,53% 5%,67% 0,79% 10%,96% 8%,91% 32%,98% 50%,86% 70%,72% 68%,61% 96%,48% 84%,35% 96%,25% 78%,9% 72%,0 56%);
 }
 
-.stat span:last-child {
-  font-weight: bold;
-  color: #ffe082;
+.tato{
+    left:66%;
+    top:9%;
+    width:28%;
+    height:40%;
+    background:#d7ccc8;
+    clip-path:polygon(3% 18%,30% 5%,54% 8%,78% 15%,82% 28%,96% 36%,100% 62%,85% 92%,64% 86%,50% 60%,28% 66%,15% 48%,0 42%);
 }
 
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border: 0;
-  border-radius: 12px;
-  background: #ffca28;
-  color: #1b1b1b;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 15px;
-  transition: 0.15s;
+.mama{
+    left:68%;
+    top:41%;
+    width:20%;
+    height:24%;
+    background:#f8bbd0;
+    clip-path:polygon(10% 8%,55% 0,90% 24%,98% 58%,70% 90%,32% 100%,5% 76%,0 35%);
 }
 
-button:hover {
-  transform: scale(1.02);
-  background: #ffd95a;
+.maks{
+    left:59%;
+    top:58%;
+    width:22%;
+    height:36%;
+    background:#bbdefb;
+    clip-path:polygon(12% 0,74% 8%,92% 35%,78% 70%,85% 100%,48% 94%,20% 72%,0 45%);
 }
 
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-  transform: none;
+.vitska{
+    left:25%;
+    top:55%;
+    width:36%;
+    height:28%;
+    background:#eeeeee;
+    clip-path:polygon(4% 14%,36% 0,72% 8%,96% 28%,100% 84%,70% 90%,42% 84%,12% 100%,0 68%);
 }
 
-.danger {
-  background: #ef5350;
-  color: white;
+.nuclear{
+    left:7%;
+    top:40%;
+    width:26%;
+    height:39%;
+    background:#c5e1a5;
+    clip-path:polygon(25% 0,100% 4%,82% 38%,60% 84%,25% 76%,5% 96%,0 50%);
 }
 
-.log {
-  height: 180px;
-  overflow-y: auto;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 12px;
-  padding: 10px;
-  font-size: 14px;
-  line-height: 1.45;
+.spvd{
+    left:8%;
+    top:80%;
+    width:28%;
+    height:18%;
+    background:#b0bec5;
+    clip-path:polygon(10% 24%,42% 0,100% 12%,84% 88%,45% 92%,8% 100%,0 55%);
 }
 
-.small {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 14px;
+.stat{
+    display:flex;
+    justify-content:space-between;
+    margin:8px 0;
+    border-bottom:1px solid #334155;
+    padding-bottom:5px;
 }
 
-.win {
-  padding: 14px;
-  margin-top: 12px;
-  border-radius: 14px;
-  background: rgba(129, 199, 132, 0.2);
-  border: 2px solid #81c784;
-  color: #c8e6c9;
-  font-weight: bold;
+.plus{
+    color:#86efac;
 }
 
-  </style>
+.minus{
+    color:#fca5a5;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    margin-top:10px;
+    cursor:pointer;
+    font-weight:bold;
+    background:#facc15;
+}
+
+button:hover{
+    background:#fde047;
+}
+
+.log{
+    background:#111827;
+    border-radius:10px;
+    height:170px;
+    overflow:auto;
+    padding:10px;
+    margin-top:10px;
+    font-size:13px;
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>🌍 Прокачка Країни</h1>
-    <div class="date-box" id="dateBox">8 березня 2023 року</div>
-  </header>  <main class="screen" id="chooseScreen">
-    <h2>Вибери свою країну</h2>
-    <p class="small">Твоя ціль — розвивати країну, збільшувати населення, гроші, армію та стабільність.</p>
-    <div class="country-grid" id="countryGrid"></div>
-  </main>  <main class="screen hidden" id="gameScreen">
-    <div class="game-layout">
-      <section class="panel">
-        <h2>Карта світу</h2>
-        <div class="map" id="map">
-          <div class="sea-label" style="left: 5%; top: 3%;">Північне море</div>
-          <div class="sea-label" style="right: 5%; bottom: 4%;">Море Мемів</div><div class="region vnr" data-country="ВНР">ВНР</div>
-      <div class="region lalukia" data-country="Лалук'я">Лалук'я</div>
-      <div class="region maks" data-country="Макс">Макс</div>
-      <div class="region spvd" data-country="СПВД">СПВД</div>
-      <div class="region nuclear" data-country="Ядерна Країна">Ядерна<br>Країна</div>
-      <div class="region tato" data-country="Тато">Тато</div>
-      <div class="region mama" data-country="Мама">Мама</div>
-      <div class="region babusia" data-country="Бабуся">Бабуся</div>
-    </div>
-  </section>
 
-  <aside class="panel">
-    <h2 id="countryName">Країна</h2>
-    <div class="stat"><span>👥 Населення</span><span id="population">0</span></div>
-    <div class="stat"><span>💰 Гроші</span><span id="money">0</span></div>
-    <div class="stat"><span>🌾 Їжа</span><span id="food">0</span></div>
-    <div class="stat"><span>🏭 Економіка</span><span id="economy">1</span></div>
-    <div class="stat"><span>🛡️ Армія</span><span id="army">1</span></div>
-    <div class="stat"><span>😊 Стабільність</span><span id="stability">100%</span></div>
+<header>
+<h1>🌍 Прокачка Країни</h1>
+<div id="date">8 березня 2023 року</div>
+</header>
 
-    <h3>Прокачки</h3>
-    <button onclick="upgradeFarm()" id="farmBtn">Покращити ферми — 120💰</button>
-    <button onclick="upgradeEconomy()" id="ecoBtn">Покращити економіку — 180💰</button>
-    <button onclick="upgradeArmy()" id="armyBtn">Прокачати армію — 150💰</button>
-    <button onclick="buildHospital()" id="hospitalBtn">Побудувати лікарню — 220💰</button>
-    <button class="danger" onclick="restartGame()">Почати заново</button>
+<div class="screen" id="chooseScreen">
+<h2>Вибери країну</h2>
 
-    <div id="winBox"></div>
-
-    <h3>Події</h3>
-    <div class="log" id="log"></div>
-  </aside>
+<div class="country-grid" id="countryGrid"></div>
 </div>
 
-  </main>  <script>
-    const countries = [
-      { name: "ВНР", population: 920000, money: 500, food: 700, economy: 4, army: 3, stability: 82 },
-      { name: "Лалук'я", population: 720000, money: 620, food: 580, economy: 5, army: 2, stability: 88 },
-      { name: "Макс", population: 1100000, money: 450, food: 660, economy: 3, army: 5, stability: 76 },
-      { name: "СПВД", population: 800000, money: 530, food: 760, economy: 4, army: 4, stability: 80 },
-      { name: "Ядерна Країна", population: 640000, money: 700, food: 460, economy: 6, army: 6, stability: 67 },
-      { name: "Тато", population: 950000, money: 560, food: 690, economy: 5, army: 4, stability: 86 },
-      { name: "Мама", population: 1030000, money: 520, food: 820, economy: 4, army: 3, stability: 91 },
-      { name: "Бабуся", population: 580000, money: 780, food: 900, economy: 6, army: 2, stability: 93 }
-    ];
+<div class="screen hidden" id="gameScreen">
 
-    let player = null;
-    let currentDate = new Date(2023, 2, 8); // 8 березня 2023
-    let timer = null;
-    let hospitalLevel = 0;
-    let farmLevel = 1;
-    let win = false;
+<div class="layout">
 
-    const countryGrid = document.getElementById("countryGrid");
-    const chooseScreen = document.getElementById("chooseScreen");
-    const gameScreen = document.getElementById("gameScreen");
+<div class="panel">
 
-    countries.forEach(country => {
-      const card = document.createElement("div");
-      card.className = "country-card";
-      card.innerHTML = `
-        <h2>${country.name}</h2>
-        <p>👥 ${format(country.population)}</p>
-        <p>💰 ${country.money}</p>
-      `;
-      card.onclick = () => chooseCountry(country);
-      countryGrid.appendChild(card);
-    });
+<h2>Карта</h2>
 
-    function chooseCountry(country) {
-      player = JSON.parse(JSON.stringify(country));
-      chooseScreen.classList.add("hidden");
-      gameScreen.classList.remove("hidden");
-      document.querySelectorAll(".region").forEach(r => {
-        if (r.dataset.country === player.name) r.classList.add("owned");
-      });
-      addLog(`Ти вибрав країну: ${player.name}. Починається розвиток!`);
-      updateUI();
-      timer = setInterval(nextDay, 3000);
-    }
+<div class="map">
 
-    function nextDay() {
-      if (!player || win) return;
+<div class="region babusia">Бабуся</div>
+<div class="region lalukia">Лалук'я</div>
+<div class="region tato">Тато</div>
+<div class="region mama">Мама</div>
+<div class="region maks">Макс</div>
+<div class="region vitska">Вітська<br>Республіка</div>
+<div class="region nuclear">Ядерна<br>Країна</div>
+<div class="region spvd">СПВД</div>
 
-      currentDate.setDate(currentDate.getDate() + 1);
+</div>
+</div>
 
-      const moneyGain = Math.floor(player.economy * 25 + player.population / 85000);
-      const foodGain = Math.floor(farmLevel * 45 + player.population / 120000);
-      const foodNeed = Math.floor(player.population / 90000);
+<div class="panel">
 
-      player.money += moneyGain;
-      player.food += foodGain - foodNeed;
+<h2 id="countryName"></h2>
 
-      let growth = Math.floor(player.population * (0.0015 + player.stability / 100000 + hospitalLevel * 0.0005));
+<div class="stat">
+<span>👥 Населення</span>
+<span>
+<span id="population"></span>
+<span id="popDelta"></span>
+</span>
+</div>
 
-      if (player.food < 0) {
-        growth = -Math.floor(player.population * 0.002);
-        player.stability -= 3;
-        player.food = 0;
-        addLog("⚠️ Не вистачило їжі! Населення зменшилось, стабільність впала.");
-      } else {
-        player.population += growth;
-      }
+<div class="stat">
+<span>💰 Гроші</span>
+<span>
+<span id="money"></span>
+<span id="moneyDelta"></span>
+</span>
+</div>
 
-      if (Math.random() < 0.18) randomEvent();
+<div class="stat">
+<span>🌾 Їжа</span>
+<span>
+<span id="food"></span>
+<span id="foodDelta"></span>
+</span>
+</div>
 
-      player.stability = Math.max(0, Math.min(100, player.stability));
-      player.population = Math.max(10000, player.population);
+<div class="stat">
+<span>🛡️ Армія</span>
+<span id="army"></span>
+</div>
 
-      checkWin();
-      updateUI();
-    }
+<div class="stat">
+<span>📏 Площа</span>
+<span id="area"></span>
+</div>
 
-    function randomEvent() {
-      const events = [
-        () => {
-          const bonus = Math.floor(80 + Math.random() * 160);
-          player.money += bonus;
-          addLog(`💰 Торговці принесли країні +${bonus} грошей.`);
-        },
-        () => {
-          const bonus = Math.floor(70 + Math.random() * 130);
-          player.food += bonus;
-          addLog(`🌾 Гарний урожай! +${bonus} їжі.`);
-        },
-        () => {
-          player.stability += 4;
-          addLog("🎉 Народ задоволений. Стабільність +4%.");
-        },
-        () => {
-          player.stability -= 5;
-          addLog("😡 У країні протести. Стабільність -5%.");
-        },
-        () => {
-          const lost = Math.floor(50 + Math.random() * 120);
-          player.money = Math.max(0, player.money - lost);
-          addLog(`🌪️ Буря пошкодила міста. -${lost} грошей.`);
-        },
-        () => {
-          player.army += 1;
-          addLog("🛡️ Добровольці вступили в армію. Армія +1.");
-        }
-      ];
+<div class="stat">
+<span>😊 Стабільність</span>
+<span id="stability"></span>
+</div>
 
-      events[Math.floor(Math.random() * events.length)]();
-    }
+<button onclick="upgradeEconomy()">
+Прокачати економіку
+</button>
 
-    function upgradeFarm() {
-      if (player.money < 120) return;
-      player.money -= 120;
-      farmLevel++;
-      player.stability += 1;
-      addLog(`🌾 Ферми покращено до рівня ${farmLevel}.`);
-      updateUI();
-    }
+<button onclick="upgradeArmy()">
+Прокачати армію
+</button>
 
-    function upgradeEconomy() {
-      if (player.money < 180) return;
-      player.money -= 180;
-      player.economy++;
-      addLog(`🏭 Економіка покращена до рівня ${player.economy}.`);
-      updateUI();
-    }
+<button onclick="upgradeFood()">
+Покращити їжу
+</button>
 
-    function upgradeArmy() {
-      if (player.money < 150) return;
-      player.money -= 150;
-      player.army++;
-      player.stability += 1;
-      addLog(`🛡️ Армія прокачана до рівня ${player.army}.`);
-      updateUI();
-    }
+<div class="log" id="log"></div>
 
-    function buildHospital() {
-      if (player.money < 220) return;
-      player.money -= 220;
-      hospitalLevel++;
-      player.stability += 3;
-      addLog(`🏥 Лікарню покращено до рівня ${hospitalLevel}. Населення росте швидше.`);
-      updateUI();
-    }
+</div>
 
-    function checkWin() {
-      if (player.population >= 2000000 && player.economy >= 10 && player.army >= 10 && player.stability >= 80) {
-        win = true;
-        clearInterval(timer);
-        document.getElementById("winBox").innerHTML = `
-          <div class="win">🏆 Перемога! ${player.name} стала супердержавою!</div>
-        `;
-        addLog("🏆 Ти виграв гру! Країна стала супердержавою.");
-      }
-    }
+</div>
 
-    function updateUI() {
-      document.getElementById("dateBox").textContent = formatDate(currentDate);
-      document.getElementById("countryName").textContent = player.name;
-      document.getElementById("population").textContent = format(player.population);
-      document.getElementById("money").textContent = Math.floor(player.money);
-      document.getElementById("food").textContent = Math.floor(player.food);
-      document.getElementById("economy").textContent = player.economy;
-      document.getElementById("army").textContent = player.army;
-      document.getElementById("stability").textContent = player.stability + "%";
+</div>
 
-      document.getElementById("farmBtn").disabled = player.money < 120;
-      document.getElementById("ecoBtn").disabled = player.money < 180;
-      document.getElementById("armyBtn").disabled = player.money < 150;
-      document.getElementById("hospitalBtn").disabled = player.money < 220;
-    }
+<script>
 
-    function addLog(text) {
-      const log = document.getElementById("log");
-      const line = document.createElement("div");
-      line.textContent = `${formatDate(currentDate)} — ${text}`;
-      log.prepend(line);
-    }
+const countries = [
 
-    function format(num) {
-      return Math.floor(num).toLocaleString("uk-UA");
-    }
+{
+name:"Вітська Республіка",
+population:320000000,
+army:40000,
+area:500000,
+stability:90,
+money:1500,
+food:1200,
+economy:5
+},
 
-    function formatDate(date) {
-      const months = [
-        "січня", "лютого", "березня", "квітня", "травня", "червня",
-        "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"
-      ];
-      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} року`;
-    }
+{
+name:"Лалук'я",
+population:180000000,
+army:15000,
+area:1150000,
+stability:60,
+money:1200,
+food:1000,
+economy:4
+},
 
-    function restartGame() {
-      clearInterval(timer);
-      player = null;
-      currentDate = new Date(2023, 2, 8);
-      hospitalLevel = 0;
-      farmLevel = 1;
-      win = false;
-      document.getElementById("winBox").innerHTML = "";
-      document.getElementById("log").innerHTML = "";
-      document.querySelectorAll(".region").forEach(r => r.classList.remove("owned"));
-      gameScreen.classList.add("hidden");
-      chooseScreen.classList.remove("hidden");
-      document.getElementById("dateBox").textContent = "8 березня 2023 року";
-    }
-  </script></body>
+{
+name:"Тато",
+population:150000000,
+army:10000,
+area:600000,
+stability:80,
+money:1100,
+food:1000,
+economy:4
+},
+
+{
+name:"Макс",
+population:130000000,
+army:30000,
+area:300000,
+stability:80,
+money:1200,
+food:950,
+economy:4
+},
+
+{
+name:"Мама",
+population:150000000,
+army:5000,
+area:400000,
+stability:70,
+money:1000,
+food:1200,
+economy:3
+},
+
+{
+name:"Бабуся",
+population:50000000,
+army:100,
+area:100000,
+stability:90,
+money:900,
+food:1400,
+economy:3
+},
+
+{
+name:"СПВД",
+population:175000000,
+army:45000,
+area:250000,
+stability:70,
+money:1300,
+food:900,
+economy:4
+},
+
+{
+name:"Ядерна Країна",
+population:90000000,
+army:35000,
+area:350000,
+stability:60,
+money:1400,
+food:700,
+economy:5
+}
+
+];
+
+let player;
+let currentDate=new Date(2023,2,8);
+
+let popChange=0;
+let moneyChange=0;
+let foodChange=0;
+
+const grid=document.getElementById("countryGrid");
+
+countries.forEach(c=>{
+
+const card=document.createElement("div");
+
+card.className="country-card";
+
+card.innerHTML=`
+<h2>${c.name}</h2>
+<p>👥 ${format(c.population)}</p>
+<p>🛡️ ${format(c.army)}</p>
+`;
+
+card.onclick=()=>chooseCountry(c);
+
+grid.appendChild(card);
+
+});
+
+function chooseCountry(country){
+
+player=JSON.parse(JSON.stringify(country));
+
+document.getElementById("chooseScreen").classList.add("hidden");
+
+document.getElementById("gameScreen").classList.remove("hidden");
+
+document.getElementById("countryName").innerText=player.name;
+
+updateUI();
+
+setInterval(nextDay,3000);
+
+log("🌍 Почалась гра за країну "+player.name);
+
+}
+
+function nextDay(){
+
+currentDate.setDate(currentDate.getDate()+1);
+
+let density=player.population/player.area;
+
+popChange=Math.floor(player.population*0.0005);
+
+moneyChange=Math.floor(player.economy*50);
+
+foodChange=Math.floor(player.economy*20);
+
+if(player.stability<50){
+popChange-=50000;
+}
+
+if(player.food<500){
+popChange-=70000;
+}
+
+if(density>1000){
+popChange-=120000;
+}
+
+player.population+=popChange;
+player.money+=moneyChange;
+player.food+=foodChange;
+
+if(Math.random()<0.05){
+
+let lost=Math.floor(player.army*0.05);
+
+player.army-=lost;
+
+log("⚔️ На тебе напала інша країна! Втрати армії: "+format(lost));
+
+}
+
+updateUI();
+
+}
+
+function updateUI(){
+
+document.getElementById("date").innerText=formatDate(currentDate);
+
+document.getElementById("population").innerText=format(player.population);
+
+document.getElementById("money").innerText=format(player.money);
+
+document.getElementById("food").innerText=format(player.food);
+
+document.getElementById("army").innerText=format(player.army);
+
+document.getElementById("area").innerText=format(player.area)+" км²";
+
+document.getElementById("stability").innerText=player.stability+"%";
+
+document.getElementById("popDelta").innerHTML=
+(popChange>=0?
+`<span class='plus'>+${format(popChange)}</span>`:
+`<span class='minus'>${format(popChange)}</span>`);
+
+document.getElementById("moneyDelta").innerHTML=
+`<span class='plus'>+${format(moneyChange)}</span>`;
+
+document.getElementById("foodDelta").innerHTML=
+(foodChange>=0?
+`<span class='plus'>+${format(foodChange)}</span>`:
+`<span class='minus'>${format(foodChange)}</span>`);
+
+}
+
+function upgradeEconomy(){
+
+if(player.money<500)return;
+
+player.money-=500;
+
+player.economy++;
+
+log("🏭 Економіка покращена");
+
+}
+
+function upgradeArmy(){
+
+if(player.money<600)return;
+
+player.money-=600;
+
+player.army+=5000;
+
+log("🛡️ Армія збільшилась");
+
+}
+
+function upgradeFood(){
+
+if(player.money<400)return;
+
+player.money-=400;
+
+player.food+=300;
+
+player.stability+=2;
+
+log("🌾 Покращено їжу");
+
+}
+
+function log(text){
+
+const div=document.getElementById("log");
+
+const el=document.createElement("div");
+
+el.innerText=formatDate(currentDate)+" — "+text;
+
+div.prepend(el);
+
+}
+
+function format(num){
+
+return Math.floor(num).toLocaleString("uk-UA");
+
+}
+
+function formatDate(date){
+
+const months=[
+"січня",
+"лютого",
+"березня",
+"квітня",
+"травня",
+"червня",
+"липня",
+"серпня",
+"вересня",
+"жовтня",
+"листопада",
+"грудня"
+];
+
+return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} року`;
+
+}
+
+</script>
+
+</body>
 </html>
