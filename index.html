@@ -1,0 +1,463 @@
+<!DOCTYPE html><html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Гра країн</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }body {
+  margin: 0;
+  background: linear-gradient(135deg, #1b1f3a, #0c1024);
+  color: white;
+}
+
+header {
+  padding: 16px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.date-box {
+  margin-top: 8px;
+  font-size: 18px;
+  color: #ffe082;
+}
+
+.screen {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.country-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.country-card {
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: 0.2s;
+  text-align: center;
+}
+
+.country-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.country-card h2 {
+  margin: 0 0 10px;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 20px;
+}
+
+@media (max-width: 850px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.09);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.map {
+  position: relative;
+  width: 100%;
+  height: 550px;
+  border-radius: 18px;
+  background: #27344f;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.sea-label {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.region {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.55);
+  transition: 0.2s;
+  padding: 5px;
+}
+
+.region.owned {
+  outline: 5px solid #fff176;
+  transform: scale(1.03);
+  z-index: 5;
+}
+
+.vnr { left: 6%; top: 12%; width: 28%; height: 26%; background: #4caf50; border-radius: 40% 25% 30% 45%; }
+.lalukia { left: 32%; top: 7%; width: 26%; height: 30%; background: #ff7043; border-radius: 28% 45% 30% 25%; }
+.maks { left: 58%; top: 12%; width: 34%; height: 23%; background: #5c6bc0; border-radius: 35% 30% 40% 20%; }
+.spvd { left: 10%; top: 38%; width: 26%; height: 28%; background: #26a69a; border-radius: 25% 35% 45% 25%; }
+.nuclear { left: 38%; top: 38%; width: 25%; height: 29%; background: #8bc34a; border-radius: 45% 20% 35% 30%; }
+.tato { left: 65%; top: 37%; width: 26%; height: 30%; background: #ab47bc; border-radius: 25% 45% 30% 35%; }
+.mama { left: 18%; top: 69%; width: 31%; height: 22%; background: #ec407a; border-radius: 40% 20% 25% 45%; }
+.babusia { left: 51%; top: 68%; width: 36%; height: 24%; background: #ffa726; border-radius: 20% 35% 45% 30%; }
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.stat span:last-child {
+  font-weight: bold;
+  color: #ffe082;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: #ffca28;
+  color: #1b1b1b;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.15s;
+}
+
+button:hover {
+  transform: scale(1.02);
+  background: #ffd95a;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.danger {
+  background: #ef5350;
+  color: white;
+}
+
+.log {
+  height: 180px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.small {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+}
+
+.win {
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: 14px;
+  background: rgba(129, 199, 132, 0.2);
+  border: 2px solid #81c784;
+  color: #c8e6c9;
+  font-weight: bold;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌍 Прокачка Країни</h1>
+    <div class="date-box" id="dateBox">8 березня 2023 року</div>
+  </header>  <main class="screen" id="chooseScreen">
+    <h2>Вибери свою країну</h2>
+    <p class="small">Твоя ціль — розвивати країну, збільшувати населення, гроші, армію та стабільність.</p>
+    <div class="country-grid" id="countryGrid"></div>
+  </main>  <main class="screen hidden" id="gameScreen">
+    <div class="game-layout">
+      <section class="panel">
+        <h2>Карта світу</h2>
+        <div class="map" id="map">
+          <div class="sea-label" style="left: 5%; top: 3%;">Північне море</div>
+          <div class="sea-label" style="right: 5%; bottom: 4%;">Море Мемів</div><div class="region vnr" data-country="ВНР">ВНР</div>
+      <div class="region lalukia" data-country="Лалук'я">Лалук'я</div>
+      <div class="region maks" data-country="Макс">Макс</div>
+      <div class="region spvd" data-country="СПВД">СПВД</div>
+      <div class="region nuclear" data-country="Ядерна Країна">Ядерна<br>Країна</div>
+      <div class="region tato" data-country="Тато">Тато</div>
+      <div class="region mama" data-country="Мама">Мама</div>
+      <div class="region babusia" data-country="Бабуся">Бабуся</div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <h2 id="countryName">Країна</h2>
+    <div class="stat"><span>👥 Населення</span><span id="population">0</span></div>
+    <div class="stat"><span>💰 Гроші</span><span id="money">0</span></div>
+    <div class="stat"><span>🌾 Їжа</span><span id="food">0</span></div>
+    <div class="stat"><span>🏭 Економіка</span><span id="economy">1</span></div>
+    <div class="stat"><span>🛡️ Армія</span><span id="army">1</span></div>
+    <div class="stat"><span>😊 Стабільність</span><span id="stability">100%</span></div>
+
+    <h3>Прокачки</h3>
+    <button onclick="upgradeFarm()" id="farmBtn">Покращити ферми — 120💰</button>
+    <button onclick="upgradeEconomy()" id="ecoBtn">Покращити економіку — 180💰</button>
+    <button onclick="upgradeArmy()" id="armyBtn">Прокачати армію — 150💰</button>
+    <button onclick="buildHospital()" id="hospitalBtn">Побудувати лікарню — 220💰</button>
+    <button class="danger" onclick="restartGame()">Почати заново</button>
+
+    <div id="winBox"></div>
+
+    <h3>Події</h3>
+    <div class="log" id="log"></div>
+  </aside>
+</div>
+
+  </main>  <script>
+    const countries = [
+      { name: "ВНР", population: 920000, money: 500, food: 700, economy: 4, army: 3, stability: 82 },
+      { name: "Лалук'я", population: 720000, money: 620, food: 580, economy: 5, army: 2, stability: 88 },
+      { name: "Макс", population: 1100000, money: 450, food: 660, economy: 3, army: 5, stability: 76 },
+      { name: "СПВД", population: 800000, money: 530, food: 760, economy: 4, army: 4, stability: 80 },
+      { name: "Ядерна Країна", population: 640000, money: 700, food: 460, economy: 6, army: 6, stability: 67 },
+      { name: "Тато", population: 950000, money: 560, food: 690, economy: 5, army: 4, stability: 86 },
+      { name: "Мама", population: 1030000, money: 520, food: 820, economy: 4, army: 3, stability: 91 },
+      { name: "Бабуся", population: 580000, money: 780, food: 900, economy: 6, army: 2, stability: 93 }
+    ];
+
+    let player = null;
+    let currentDate = new Date(2023, 2, 8); // 8 березня 2023
+    let timer = null;
+    let hospitalLevel = 0;
+    let farmLevel = 1;
+    let win = false;
+
+    const countryGrid = document.getElementById("countryGrid");
+    const chooseScreen = document.getElementById("chooseScreen");
+    const gameScreen = document.getElementById("gameScreen");
+
+    countries.forEach(country => {
+      const card = document.createElement("div");
+      card.className = "country-card";
+      card.innerHTML = `
+        <h2>${country.name}</h2>
+        <p>👥 ${format(country.population)}</p>
+        <p>💰 ${country.money}</p>
+      `;
+      card.onclick = () => chooseCountry(country);
+      countryGrid.appendChild(card);
+    });
+
+    function chooseCountry(country) {
+      player = JSON.parse(JSON.stringify(country));
+      chooseScreen.classList.add("hidden");
+      gameScreen.classList.remove("hidden");
+      document.querySelectorAll(".region").forEach(r => {
+        if (r.dataset.country === player.name) r.classList.add("owned");
+      });
+      addLog(`Ти вибрав країну: ${player.name}. Починається розвиток!`);
+      updateUI();
+      timer = setInterval(nextDay, 3000);
+    }
+
+    function nextDay() {
+      if (!player || win) return;
+
+      currentDate.setDate(currentDate.getDate() + 1);
+
+      const moneyGain = Math.floor(player.economy * 25 + player.population / 85000);
+      const foodGain = Math.floor(farmLevel * 45 + player.population / 120000);
+      const foodNeed = Math.floor(player.population / 90000);
+
+      player.money += moneyGain;
+      player.food += foodGain - foodNeed;
+
+      let growth = Math.floor(player.population * (0.0015 + player.stability / 100000 + hospitalLevel * 0.0005));
+
+      if (player.food < 0) {
+        growth = -Math.floor(player.population * 0.002);
+        player.stability -= 3;
+        player.food = 0;
+        addLog("⚠️ Не вистачило їжі! Населення зменшилось, стабільність впала.");
+      } else {
+        player.population += growth;
+      }
+
+      if (Math.random() < 0.18) randomEvent();
+
+      player.stability = Math.max(0, Math.min(100, player.stability));
+      player.population = Math.max(10000, player.population);
+
+      checkWin();
+      updateUI();
+    }
+
+    function randomEvent() {
+      const events = [
+        () => {
+          const bonus = Math.floor(80 + Math.random() * 160);
+          player.money += bonus;
+          addLog(`💰 Торговці принесли країні +${bonus} грошей.`);
+        },
+        () => {
+          const bonus = Math.floor(70 + Math.random() * 130);
+          player.food += bonus;
+          addLog(`🌾 Гарний урожай! +${bonus} їжі.`);
+        },
+        () => {
+          player.stability += 4;
+          addLog("🎉 Народ задоволений. Стабільність +4%.");
+        },
+        () => {
+          player.stability -= 5;
+          addLog("😡 У країні протести. Стабільність -5%.");
+        },
+        () => {
+          const lost = Math.floor(50 + Math.random() * 120);
+          player.money = Math.max(0, player.money - lost);
+          addLog(`🌪️ Буря пошкодила міста. -${lost} грошей.`);
+        },
+        () => {
+          player.army += 1;
+          addLog("🛡️ Добровольці вступили в армію. Армія +1.");
+        }
+      ];
+
+      events[Math.floor(Math.random() * events.length)]();
+    }
+
+    function upgradeFarm() {
+      if (player.money < 120) return;
+      player.money -= 120;
+      farmLevel++;
+      player.stability += 1;
+      addLog(`🌾 Ферми покращено до рівня ${farmLevel}.`);
+      updateUI();
+    }
+
+    function upgradeEconomy() {
+      if (player.money < 180) return;
+      player.money -= 180;
+      player.economy++;
+      addLog(`🏭 Економіка покращена до рівня ${player.economy}.`);
+      updateUI();
+    }
+
+    function upgradeArmy() {
+      if (player.money < 150) return;
+      player.money -= 150;
+      player.army++;
+      player.stability += 1;
+      addLog(`🛡️ Армія прокачана до рівня ${player.army}.`);
+      updateUI();
+    }
+
+    function buildHospital() {
+      if (player.money < 220) return;
+      player.money -= 220;
+      hospitalLevel++;
+      player.stability += 3;
+      addLog(`🏥 Лікарню покращено до рівня ${hospitalLevel}. Населення росте швидше.`);
+      updateUI();
+    }
+
+    function checkWin() {
+      if (player.population >= 2000000 && player.economy >= 10 && player.army >= 10 && player.stability >= 80) {
+        win = true;
+        clearInterval(timer);
+        document.getElementById("winBox").innerHTML = `
+          <div class="win">🏆 Перемога! ${player.name} стала супердержавою!</div>
+        `;
+        addLog("🏆 Ти виграв гру! Країна стала супердержавою.");
+      }
+    }
+
+    function updateUI() {
+      document.getElementById("dateBox").textContent = formatDate(currentDate);
+      document.getElementById("countryName").textContent = player.name;
+      document.getElementById("population").textContent = format(player.population);
+      document.getElementById("money").textContent = Math.floor(player.money);
+      document.getElementById("food").textContent = Math.floor(player.food);
+      document.getElementById("economy").textContent = player.economy;
+      document.getElementById("army").textContent = player.army;
+      document.getElementById("stability").textContent = player.stability + "%";
+
+      document.getElementById("farmBtn").disabled = player.money < 120;
+      document.getElementById("ecoBtn").disabled = player.money < 180;
+      document.getElementById("armyBtn").disabled = player.money < 150;
+      document.getElementById("hospitalBtn").disabled = player.money < 220;
+    }
+
+    function addLog(text) {
+      const log = document.getElementById("log");
+      const line = document.createElement("div");
+      line.textContent = `${formatDate(currentDate)} — ${text}`;
+      log.prepend(line);
+    }
+
+    function format(num) {
+      return Math.floor(num).toLocaleString("uk-UA");
+    }
+
+    function formatDate(date) {
+      const months = [
+        "січня", "лютого", "березня", "квітня", "травня", "червня",
+        "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"
+      ];
+      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} року`;
+    }
+
+    function restartGame() {
+      clearInterval(timer);
+      player = null;
+      currentDate = new Date(2023, 2, 8);
+      hospitalLevel = 0;
+      farmLevel = 1;
+      win = false;
+      document.getElementById("winBox").innerHTML = "";
+      document.getElementById("log").innerHTML = "";
+      document.querySelectorAll(".region").forEach(r => r.classList.remove("owned"));
+      gameScreen.classList.add("hidden");
+      chooseScreen.classList.remove("hidden");
+      document.getElementById("dateBox").textContent = "8 березня 2023 року";
+    }
+  </script></body>
+</html>
