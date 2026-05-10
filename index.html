@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Імперії Карти — Deluxe+</title>
 <style>
-:root{--bg:#07101f;--panel:#12203d;--line:#31486f;--txt:#eef4ff;--muted:#9cb2de;--ok:#52d879;--bad:#ff7f7f}
+ :root{--bg:#07101f;--panel:#12203d;--line:#31486f;--txt:#eef4ff;--muted:#9cb2de;--ok:#52d879;--bad:#ff7f7f}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#0e1f3d,#07101f 65%);color:var(--txt);font-family:Segoe UI,Arial}
 header{position:sticky;top:0;background:#08152bcc;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .wrap{max-width:1500px;margin:0 auto;padding:14px}.hidden{display:none}.grid{display:grid;gap:12px}.choose{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.layout{grid-template-columns:1.2fr .8fr}.side{display:grid;gap:12px;grid-template-columns:1fr 1fr}@media(max-width:1100px){.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr}}
@@ -42,21 +42,21 @@ button,input{width:100%;padding:9px;border:none;border-radius:9px;margin-top:7px
 <div id="countryModal"><div class="modalBox"><h3 id="mName"></h3><div id="mInfo" class="mini"></div><label>💸 Сума допомоги:</label><input id="aidInput" type="number" min="0" step="100" value="1000"/>
 <button onclick="sendAid()">Надіслати гроші</button><button id="warPeaceBtn" onclick="modalWarPeace()"></button><button id="allyBtn" onclick="modalAllianceToggle()"></button><button onclick="closeModal()" style="background:#93a7d6">Закрити</button></div></div>
 <script>
-const DAY_MS=3000, START=new Date(2023,2,8);
-const regions=[
-{name:"Вітська Республіка",shape:"vitska",population:320000000,army:40000,area:500000,stability:90,money:2600,food:1900,economy:6},
-{name:"Лалук'я",shape:"lalukia",population:180000000,army:15000,area:1150000,stability:60,money:1700,food:1300,economy:4},
-{name:"Макс",shape:"maks",population:130000000,army:30000,area:300000,stability:80,money:1800,food:1100,economy:5},
-{name:"СПВД",shape:"spvd",population:175000000,army:45000,area:250000,stability:70,money:2200,food:950,economy:5},
-{name:"Ядерна Країна",shape:"nuclear",population:90000000,army:35000,area:350000,stability:60,money:2100,food:900,economy:5},
-{name:"Тато",shape:"tato",population:150000000,army:10000,area:600000,stability:80,money:1600,food:1200,economy:4},
-{name:"Мама",shape:"mama",population:150000000,army:5000,area:400000,stability:70,money:1500,food:1300,economy:4},
-{name:"Бабуся",shape:"babusia",population:50000000,army:100,area:100000,stability:90,money:1300,food:1400,economy:3},
-{name:"Арубія",shape:"arubia",population:80000000,army:25000,area:150000,stability:60,money:1500,food:950,economy:4},
-{name:"Сильва",shape:"sylva",population:80000000,army:15000,area:150000,stability:80,money:1400,food:1100,economy:4},
-{name:"Вайдашка",shape:"vaydashka",population:1000000,army:5000,area:50000,stability:40,money:400,food:350,economy:2}
-];
-const S={date:new Date(START),player:null,countries:[],modalTarget:null,price:{economy:600,army:700,foodProd:500,houses:450},speed:1,timer:null};
+ </head><body>
+<header><div><h2 style="margin:0">🗺️ Імперії Карти</h2><div id="date"></div></div><button id="speedBtn" onclick="toggleSpeed()">Швидкість: x1</button></header>
+<div class="wrap" id="chooseScreen"><h3>Обери країну</h3><div class="grid choose" id="countryGrid"></div></div>
+<div class="wrap hidden" id="gameScreen"><div class="grid layout"><section class="card"><h3>Карта</h3><div class="map" id="map"></div></section>
+<section class="card"><h3 id="countryName"></h3>
+<div class="row"><span>👥 Населення</span><span><b id="population"></b> <span id="popDelta"></span></span></div><div class="row"><span>💰 Гроші</span><span><b id="money"></b> <span id="moneyDelta"></span></span></div><div class="row"><span>🌾 Їжа</span><span><b id="food"></b> <span id="foodDelta"></span></span></div>
+<div class="row"><span>🛡️ Армія</span><b id="army"></b></div><div class="row"><span>📐 Площа</span><b id="area"></b></div><div class="row"><span>😊 Стабільність</span><b id="stability"></b></div><div class="row"><span>🏭 Економіка</span><b id="economy"></b></div>
+<div class="mini" id="prices"></div>
+<button id="btnEco" onclick="upgrade('economy')"></button><button id="btnArmy" onclick="upgrade('army')"></button><button id="btnFood" onclick="upgrade('foodProd')"></button><button id="btnHouses" onclick="upgrade('houses')"></button>
+<div class="side"><div><h4>Відносини</h4><div class="tbl" id="relations"></div></div><div><h4>Топи</h4><div class="tbl" id="tops"></div></div></div>
+<h4>Події</h4><div class="log" id="log"></div></section></div></div>
+<div id="countryModal"><div class="modalBox"><h3 id="mName"></h3><div id="mInfo" class="mini"></div><label>💸 Сума допомоги:</label><input id="aidInput" type="number" min="0" step="100" value="1000"/>
+<button onclick="sendAid()">Надіслати гроші</button><button id="warPeaceBtn" onclick="modalWarPeace()"></button><button id="allyBtn" onclick="modalAllianceToggle()"></button><button onclick="closeModal()" style="background:#93a7d6">Закрити</button></div></div>
+<script>
+  const S={date:new Date(START),player:null,countries:[],modalTarget:null,price:{economy:600,army:700,foodProd:500,houses:450},speed:1,timer:null};
 function init(){S.countries=regions.map(c=>({...c,alive:true,relations:{},war:null,warDays:0,nextWar:r(90,150),nextEvent:r(7,21),delta:{p:0,m:0,f:0},foodProd:1,housing:1,lastHousingDay:0,overlord:null,rebelRel:0,rejectedPeace:{} }));
 S.countries.forEach(a=>S.countries.forEach(b=>{if(a.name!==b.name)a.relations[b.name]=0;}));drawPick();drawMap();uDate();}
 function drawPick(){el('countryGrid').innerHTML=S.countries.map(c=>`<div class='card pick' onclick="choose('${c.name}')"><h4>${c.name}</h4><div>👥 ${f(c.population)}</div><div>🛡️ ${f(c.army)}</div></div>`).join('');}
