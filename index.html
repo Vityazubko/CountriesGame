@@ -101,6 +101,6 @@ function allied(a,b){return a.relations[b.name]>=90&&b.relations[a.name]>=90}fun
 function dayIndex(){return Math.floor((S.date-START)/86400000)}function delta(i,v){el(i).innerHTML=`<span class='${v>=0?'plus':'minus'}'>${v>=0?'+':''}${f(v)}</span>`}function set(i,v){el(i).textContent=v}
 function el(i){return document.getElementById(i)}function id(t){return t.toLowerCase().replace(/\s+/g,'-').replace(/[']/g,'')}function log(t){const d=document.createElement('div');d.textContent=`${fd(S.date)} — ${t}`;el('log').prepend(d)}
 function f(n){return Math.floor(n).toLocaleString('uk-UA')}function fd(d){const m=["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()} року`;}
-function uDate(){el('date').textContent=fd(S.date)}
+function uDate(){el('date').textContent=fd(S.date)} 
 init();
 </script></body></html>
